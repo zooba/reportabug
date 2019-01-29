@@ -17,6 +17,16 @@ def from_namespace(ns, *exclude):
     }
 
 
+def join(values, sep=None):
+    return (sep or ", ").join(
+        s if isinstance(s, str) else "None" if s is None else repr(s) for s in values
+    )
+
+
+def join_paths(values):
+    return join(values, os.path.pathsep)
+
+
 def collect_from_sys():
     data = {}
 
@@ -31,7 +41,7 @@ def collect_from_sys():
     if getattr(sys, "_git", None):
         data["git"] = {"repo": sys._git[0], "tag": sys._git[1], "commit": sys._git[2]}
 
-    data["path"] = list(sys.path)
+    data["path"] = join_paths(sys.path)
 
     return data
 
@@ -68,17 +78,34 @@ def collect_from_module(module_name, extra_args):
 
 
 def collect_from_environ():
-    return os.environ.copy()
+    return {
+        k: os.environ.get(k)
+        for k in [
+            "PYTHONPATH",
+            "PYTHONHOME",
+            "PYTHONSTARTUP",
+            "PYTHONCASEOK",
+            "PYTHONIOENCODING",
+            "PYTHONFAULTHANDLER",
+            "PYTHONHASHSEED",
+            "PYTHONMALLOC",
+            "PYTHONCOERCECLOCALE",
+            "PYTHONBREAKPOINT",
+            "PYTHONDEVMODE",
+            "PATH",
+        ]
+        if k in os.environ
+    }
 
 
 def collect_from_sys_path():
     data = {}
 
-    for path in sys.path:
+    for i, path in enumerate(sys.path):
         try:
-            data[path] = os.listdir(path)
+            data[str(i)] = join_paths(sorted(os.listdir(path)))
         except OSError:
-            data[path] = "(unreadable)"
+            data[str(i)] = "(unreadable)"
 
     return data
 
