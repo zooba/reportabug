@@ -101,7 +101,7 @@ def collect_from_module(module_name, extra_args):
 
 
 def collect_from_environ():
-    return {
+    data = {
         k: os.environ.get(k)
         for k in [
             "PYTHONPATH",
@@ -119,6 +119,9 @@ def collect_from_environ():
         ]
         if k in os.environ
     }
+    data["cwd"] = os.getcwd()
+
+    return data
 
 
 def collect_from_sys_path():
@@ -271,7 +274,7 @@ def format_raw(data):
         print(k.ljust(max_key), v)
 
 
-def main(args):
+def main():
     module_info = {}
     censored = {
         "$USER": censor_word(getpass.getuser()),
@@ -289,7 +292,7 @@ def main(args):
     }
 
     # For now, assume args without leading '-' is module name
-    for a in args:
+    for a in sys.argv[1:]:
         if a[0] != "-":
             module_info[a] = collect_from_module(a, None)
 
@@ -300,4 +303,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    sys.exit(int(main(sys.argv[1:]) or 0))
+    sys.exit(int(main() or 0))

@@ -6,6 +6,7 @@
 #-------------------------------------------------------------------------
 
 import os
+import re
 import setuptools
 import sys
 
