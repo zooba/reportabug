@@ -1,9 +1,14 @@
 """Generates useful information to include when reporting a bug in a library.
+
+The report produced by this tool should be attached to a bug report. Ask
+the project which format they would prefer, and whether they would like it
+copy-pasted in or attached as a file.
 """
 
 __version__ = "0.1"
 __author__ = "Steve Dower <steve.dower@python.org>"
 
+import argparse
 import getpass
 import hashlib
 import importlib
@@ -274,7 +279,33 @@ def format_raw(data):
         print(k.ljust(max_key), v)
 
 
-def main():
+def parse_args(args):
+    parser = argparse.ArgumentParser(
+        prog="reportabug",
+        description=__doc__.splitlines()[0].strip(),
+        epilog="\n".join(__doc__.splitlines()[1:]).strip(),
+    )
+    parser.add_argument(
+        "modules",
+        metavar="MODULE",
+        type=str,
+        nargs="*",
+        help="Modules to include in the report",
+    )
+    parser.add_argument(
+        "--format",
+        metavar="FORMAT",
+        type=str,
+        default="markdown",
+        help="Report format ([markdown], text)",
+    )
+
+    return parser.parse_args(args)
+
+
+def main(args=None):
+    ns = parse_args(args or sys.argv[1:])
+
     module_info = {}
     censored = {
         "$USER": censor_word(getpass.getuser()),
@@ -291,15 +322,18 @@ def main():
         "censored": censored,
     }
 
-    # For now, assume args without leading '-' is module name
-    for a in sys.argv[1:]:
-        if a[0] != "-":
-            module_info[a] = collect_from_module(a, None)
+    for module_name in ns.modules:
+        module_info[module_name] = collect_from_module(module_name, None)
 
     data = censor(data, bad_words)
 
-    format_markdown(data)
-    # format_raw(data)
+    if ns.format.lower() in ("m", "markdown"):
+        format_markdown(data)
+    elif ns.format.lower() in ("t", "text"):
+        format_raw(data)
+    else:
+        print("Unknown report format:", ns.format, file=sys.__stderr__)
+        return 1
 
 
 if __name__ == "__main__":
