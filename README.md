@@ -4,8 +4,8 @@ A Python tool for collecting information when reporting bugs.
 ## Installation
 
 ```
-pip install git+https://github.com/zooba/reportabug
-pip install reportabug
+python -m pip install git+https://github.com/zooba/reportabug
+python -m pip install reportabug
 ```
 
 ## Usage
