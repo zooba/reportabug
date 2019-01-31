@@ -1,6 +1,9 @@
 # reportabug
 A Python tool for collecting information when reporting bugs.
 
+[![PyPI version](https://badge.fury.io/py/reportabug.svg)](https://pypi.org/project/reportabug)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+
 ## Installation
 
 ```
@@ -8,15 +11,23 @@ python -m pip install git+https://github.com/zooba/reportabug
 python -m pip install reportabug
 ```
 
+Installing directly from GitHub is recommended for now, as not every improvement
+is being released to PyPI.
+
 ## Usage
 
 ```
-reportabug [MODULE NAMES]
-python -m reportabug [MODULE NAMES]
+reportabug [--format FORMAT] [MODULE NAMES]
+python -m reportabug [--format FORMAT] [MODULE NAMES]
 ```
 
-GitHub-compatible Markdown will be output to the console. You should copy-paste this
-into your bug report.
+The report will be output to the console. You should copy-paste this into
+your bug report.
+
+`FORMAT` may be one of `ghmarkdown` (default, also `ghmd` and `ghm`),
+`markdown` (also `md` and `m`), or `text` (also `t`). In general, `ghmarkdown`
+will be valid and optimised for GitHub issues, while `markdown` will be more
+pure.
 
 On Windows, you can pipe to `clip.exe` to store the output on the clipboard.
 
@@ -39,6 +50,8 @@ def _reportabug_info(arg):
 ```
 
 Each key/value pair will be added to the result section for the module. If the `summary` key exists, it will be added to a summary section if one exists for the selected output format.
+
+The `arg` parameter is currently undefined, but may be used in future.
 
 ## Contributing
 

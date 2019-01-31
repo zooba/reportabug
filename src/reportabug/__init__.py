@@ -46,7 +46,7 @@ def collect_from_sys():
     data = {
         "prefix": sys.prefix,
         "executable": sys.executable,
-        "argv": join(map(repr, sys.argv), sep=" "),
+        "argv": sys.argv[1:],
         "platform": sys.platform,
     }
 
@@ -180,13 +180,15 @@ def flatten_dict(data, prefix=""):
         yield from flatten_dict(v, p)
 
 
-def format_markdown(data):
+def format_markdown(data, github=False):
     print("# ReportABug Summary")
     print()
     print(
         "Generated",
         datetime.now(),
-        "with arguments [{}]".format(", ".join("`{!r}`".format(a) for a in sys.argv)),
+        "with arguments [{}]".format(
+            ", ".join("`{!r}`".format(a) for a in data["sys"]["argv"])
+        ),
     )
     print()
     print("* Python", data["platform"]["version"], data["platform"]["architecture"])
@@ -202,17 +204,24 @@ def format_markdown(data):
 
     print("# Module info")
     for k in sorted(modules):
-        print("<details><summary>{}</summary></p>".format(k))
+        if github:
+            print("<details><summary><tt>{}</tt></summary></p>".format(k))
+        else:
+            print("##", k)
         print()
         print("```python")
         for k2, v2 in flatten_dict(modules[k]):
             print("{} = {!r}".format(k2, v2))
         print("```")
         print()
-        print("</p></details>")
-        print()
+        if github:
+            print("</p></details>")
+            print()
 
-    print("<details><summary>sys</summary><p>")
+    if github:
+        print("<details><summary><tt>sys</tt></summary><p>")
+    else:
+        print("## sys")
     print()
     print("```python")
     for k in sorted(data["sys"]):
@@ -225,21 +234,27 @@ def format_markdown(data):
             print("{} = {!r}".format(k, data["sys"][k]))
     print("```")
     print()
-    print("</p></details>")
-    print()
+    if github:
+        print("</p></details>")
+        print()
 
-    print("<details><summary>platform</summary><p>")
+    if github:
+        print("<details><summary><tt>platform</tt></summary><p>")
+    else:
+        print("## platform")
     print()
     print("```python")
     for k in sorted(data["platform"]):
         print("{} = {!r}".format(k, data["platform"][k]))
     print("```")
     print()
-    print("</p></details>")
-    print()
+    if github:
+        print("</p></details>")
+        print()
 
     print("## Environment")
-    print("<details><summary>Detail</summary><p>")
+    if github:
+        print("<details><summary>Detail</summary><p>")
     print()
     print("```python")
     for k in sorted(data["environ"]):
@@ -252,19 +267,22 @@ def format_markdown(data):
             print(k, "=", repr(data["environ"][k]))
     print("```")
     print()
-    print("</p></details>")
-    print()
+    if github:
+        print("</p></details>")
+        print()
 
     print("## Censored words")
-    print("<details><summary>Detail</summary><p>")
+    if github:
+        print("<details><summary>Detail</summary><p>")
     print()
     print(" Key | Info")
     print("-----|-----")
     for k in sorted(data["censored"]):
         print(k, "|", data["censored"][k])
     print()
-    print("</p></details>")
-    print()
+    if github:
+        print("</p></details>")
+        print()
 
 
 def format_raw(data):
@@ -297,7 +315,7 @@ def parse_args(args):
         metavar="FORMAT",
         type=str,
         default="markdown",
-        help="Report format ([markdown], text)",
+        help="Report format ([ghmarkdown], markdown, text)",
     )
 
     return parser.parse_args(args)
@@ -327,8 +345,10 @@ def main(args=None):
 
     data = censor(data, bad_words)
 
-    if ns.format.lower() in ("m", "markdown"):
-        format_markdown(data)
+    if ns.format.lower() in ("ghm", "ghmd", "ghmarkdown"):
+        format_markdown(data, github=True)
+    elif ns.format.lower() in ("m", "md", "markdown"):
+        format_markdown(data, github=False)
     elif ns.format.lower() in ("t", "text"):
         format_raw(data)
     else:
