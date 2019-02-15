@@ -1,0 +1,44 @@
+parameters:
+  name:
+  vmImage:
+  python.architecture: x64
+
+jobs:
+- job: ${{ parameters.name }}
+  displayName: ${{ parameters.name }} Tests
+  dependsOn: Package
+
+  pool:
+    vmImage: ${{ parameters.vmImage }}
+
+  strategy:
+    matrix:
+      Python36:
+        python.version: 3.6
+      Python37:
+        python.version: 3.7
+    maxParallel: 4
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: $(python.version)
+      architecture: ${{ parameters['python.architecture'] }}
+    displayName: "Use Python $(python.version)"
+
+  - task: DownloadPipelineArtifact@0
+    inputs:
+      artifactName: dist
+      targetPath: $(Build.BinariesDirectory)/dist
+    displayName: "Download built package"
+
+  - script: pip install reportabug --find-links "$(Build.BinariesDirectory)/dist"
+    displayName: "Install reportabug"
+
+  - script: reportabug reportabug
+    displayName: "Self-test and system info"
+
+  - script: pip install pytest-azurepipelines && pytest --test-run-title="${{ parameters.name }}"
+    env:
+      REPORTABUG_CI: true
+    displayName: "Unit tests"

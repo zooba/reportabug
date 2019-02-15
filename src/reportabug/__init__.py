@@ -5,7 +5,7 @@ the project which format they would prefer, and whether they would like it
 copy-pasted in or attached as a file.
 """
 
-__version__ = "0.1"
+__version__ = "0.1.0"
 __author__ = "Steve Dower <steve.dower@python.org>"
 
 import argparse
@@ -103,6 +103,14 @@ def collect_from_module(module_name, extra_args):
         return data
     except Exception as ex:
         return {"_error_type": type(ex).__name__, "_error_full": str(ex)}
+
+
+def _reportabug_info(arg):
+    yield "an_int", 123
+    yield "a_float", 3.14159
+    yield "a_list", ["of", 1, int, "and", 6.0, b"types"]
+    yield "a_dict", {}
+    yield "summary", "self-test successful"
 
 
 def collect_from_environ():
