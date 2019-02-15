@@ -3,6 +3,7 @@ A Python tool for collecting information when reporting bugs.
 
 [![PyPI version](https://badge.fury.io/py/reportabug.svg)](https://pypi.org/project/reportabug)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+[![Build Status](https://dev.azure.com/stevedower/ReportABug/_apis/build/status/ReportABug-CI)](https://dev.azure.com/stevedower/ReportABug/_build/latest?definitionId=28)
 
 ## Installation
 
